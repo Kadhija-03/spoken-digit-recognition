@@ -1,67 +1,82 @@
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    margin: 0;
-    color: white;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: white;
 }
 
+/* Container */
 .container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 10px;
 }
 
-/* Card UI */
+/* Card */
 .card {
-    background: rgba(255,255,255,0.1);
-    padding: 30px;
-    border-radius: 20px;
-    width: 350px;
-    text-align: center;
-    backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  backdrop-filter: blur(10px);
 }
 
+/* Headings */
 h1 {
-    position: absolute;
-    top: 20px;
-    width: 100%;
-    text-align: center;
+  text-align: center;
+  font-size: 1.8rem;
+}
+
+h2 {
+  font-size: 1.2rem;
 }
 
 /* Buttons */
 button {
-    padding: 10px 20px;
-    margin: 10px;
-    border-radius: 10px;
-    border: none;
-    background: #ff7eb3;
-    color: white;
-    cursor: pointer;
-    transition: 0.3s;
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 10px;
+  background: #00ffcc;
+  color: black;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 button:hover {
-    transform: scale(1.1);
+  background: #00ddb3;
+}
+
+/* File input */
+input[type="file"] {
+  width: 100%;
+  margin-top: 10px;
 }
 
 /* Mic icon */
 #micIndicator {
-    font-size: 40px;
+  font-size: 40px;
+  margin: 10px 0;
 }
 
 /* Result */
 #result {
-    margin-top: 20px;
-    font-size: 22px;
+  margin-top: 20px;
+  font-size: 1.4rem;
 }
 
+/* Loader */
 .loader {
   border: 6px solid #f3f3f3;
   border-top: 6px solid #00ffcc;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   animation: spin 1s linear infinite;
   margin: 20px auto;
 }
@@ -69,4 +84,21 @@ button:hover {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* 📱 Mobile Optimization */
+@media (max-width: 600px) {
+  .card {
+    padding: 15px;
+    border-radius: 15px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 10px;
+  }
 }
