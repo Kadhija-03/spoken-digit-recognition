@@ -91,7 +91,7 @@ async function startRecording() {
     document.getElementById("micIndicator").style.color = "red";
 
     let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
+    
     recorder = new MediaRecorder(stream);
 
     recorder.ondataavailable = e => audioChunks.push(e.data);
@@ -106,8 +106,8 @@ function stopRecording() {
     document.getElementById("micIndicator").style.color = "white";
 
     recorder.onstop = () => {
-        let blob = new Blob(audioChunks, { type: 'audio/webm' });
-
+        
+        let blob = new Blob(audioChunks);
         let audioURL = URL.createObjectURL(blob);
         let player = document.getElementById("audioPlayback");
         player.src = audioURL;
