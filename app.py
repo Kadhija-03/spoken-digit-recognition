@@ -46,16 +46,10 @@ def get_model():
 def preprocess(file_path, max_pad_len=40):
     audio, sr = librosa.load(file_path, sr=None)
 
-    # Resample to 8000 Hz
     audio = librosa.resample(audio, orig_sr=sr, target_sr=8000)
 
-    # Trim silence
-    audio, _ = librosa.effects.trim(audio, top_db=10)
-
-    # Normalize
     audio = librosa.util.normalize(audio)
 
-    # Fix length (1 sec)
     if len(audio) > 8000:
         audio = audio[:8000]
     else:
@@ -65,7 +59,7 @@ def preprocess(file_path, max_pad_len=40):
         y=audio,
         sr=8000,
         n_mfcc=13,
-        n_fft=512
+        n_fft=256   # faster
     )
 
     mfcc = librosa.util.fix_length(mfcc, size=max_pad_len, axis=1)
@@ -80,6 +74,12 @@ def preprocess(file_path, max_pad_len=40):
 def home():
     return render_template("index.html")
 
+# 🔥 Warmup (reduce delay feeling)
+@app.route("/warmup")
+def warmup():
+    get_model()
+    return "ready"
+
 @app.route("/predict", methods=["POST"])
 def predict():
     if "file" not in request.files:
@@ -88,7 +88,7 @@ def predict():
     file = request.files["file"]
     filename = file.filename
 
-    # Save input file
+    # Save input
     if filename.endswith(".webm"):
         input_path = "input.webm"
     else:
@@ -99,17 +99,17 @@ def predict():
     output_path = "converted.wav"
 
     try:
-        # 🔥 Convert WebM → WAV
+        # Convert if needed
         if input_path.endswith(".webm"):
             ffmpeg.input(input_path).output(
                 output_path,
                 ar=8000,
-                ac=1
+                ac=1,
+                loglevel="quiet"
             ).run(overwrite_output=True)
         else:
             output_path = input_path
 
-        # Preprocess
         features = preprocess(output_path)
 
         model = get_model()
@@ -125,6 +125,7 @@ def predict():
         for f in [input_path, output_path]:
             if os.path.exists(f):
                 os.remove(f)
+
 # ======================
 # Run
 # ======================
