@@ -30,8 +30,14 @@ def build_model():
         layers.Dense(10, activation='softmax')
     ])
     return model
-model = build_model()
-model.load_weights("digit_model.h5")
+model = None
+
+def get_model():
+    global model
+    if model is None:
+        model = build_model()
+        model.load_weights("digit_model.h5")
+    return model
 # ======================
 # Preprocessing (MFCC)
 # ======================
@@ -121,7 +127,7 @@ def predict():
 
     try:
         features = preprocess(temp_path)
-
+        model = get_model()
         prediction = model.predict(features)
         digit = int(np.argmax(prediction))
 
