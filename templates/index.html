@@ -7,17 +7,18 @@
 <body>
 
 <div class="container">
-
     <h1>🎤 Spoken Digit Recognition</h1>
 
     <div class="card">
 
+        <!-- Upload -->
         <h2>Upload Audio</h2>
         <input type="file" id="audioFile">
         <button onclick="upload()">Predict</button>
 
         <hr>
 
+        <!-- Recording -->
         <h2>Record Live</h2>
 
         <div id="micIndicator">🎤</div>
@@ -27,18 +28,24 @@
 
         <p id="status"></p>
 
-        <!-- Audio playback -->
         <audio id="audioPlayback" controls style="display:none;"></audio>
 
         <h2 id="result">Result: --</h2>
 
     </div>
-
 </div>
 
 <script>
+// =======================
+// Upload
+// =======================
 function upload() {
     let fileInput = document.getElementById("audioFile");
+
+    if (fileInput.files.length === 0) {
+        alert("Please select a file");
+        return;
+    }
 
     let formData = new FormData();
     formData.append("file", fileInput.files[0]);
@@ -49,8 +56,13 @@ function upload() {
     })
     .then(res => res.json())
     .then(data => {
-        document.getElementById("result").innerText =
-            "Predicted Digit: " + data.predicted_digit;
+        if (data.predicted_digit !== undefined) {
+            document.getElementById("result").innerText =
+                "Predicted Digit: " + data.predicted_digit;
+        } else {
+            document.getElementById("result").innerText =
+                "Error: " + data.error;
+        }
     });
 }
 
@@ -63,12 +75,7 @@ async function startRecording() {
     document.getElementById("status").innerText = "Recording...";
     document.getElementById("micIndicator").style.color = "red";
 
-    let stream = await navigator.mediaDevices.getUserMedia({ audio: {
-        sampleRate: 8000,
-        channelCount: 1,
-        noiseSuppression: true,
-        echoCancellation: true
-    } });
+    let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     recorder = new MediaRecorder(stream);
 
@@ -84,7 +91,8 @@ function stopRecording() {
     document.getElementById("micIndicator").style.color = "white";
 
     recorder.onstop = () => {
-        let blob = new Blob(audioChunks, { type: 'audio/wav' });
+        // 🔥 FIX: correct format (webm)
+        let blob = new Blob(audioChunks, { type: 'audio/webm' });
 
         // Playback
         let audioURL = URL.createObjectURL(blob);
@@ -93,7 +101,7 @@ function stopRecording() {
         player.style.display = "block";
 
         let formData = new FormData();
-        formData.append("file", blob, "recording.wav");
+        formData.append("file", blob, "recording.webm");
 
         fetch("/predict", {
             method: "POST",
@@ -101,8 +109,14 @@ function stopRecording() {
         })
         .then(res => res.json())
         .then(data => {
-            document.getElementById("result").innerText =
-                "Predicted Digit: " + data.predicted_digit;
+            if (data.predicted_digit !== undefined) {
+                document.getElementById("result").innerText =
+                    "Predicted Digit: " + data.predicted_digit;
+            } else {
+                document.getElementById("result").innerText =
+                    "Error: " + data.error;
+            }
+
             document.getElementById("status").innerText = "";
         });
 
