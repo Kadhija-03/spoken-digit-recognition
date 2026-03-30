@@ -44,22 +44,12 @@ def get_model():
 # Preprocessing
 # ======================
 def preprocess(file_path, max_pad_len=40):
-    # ✅ EXACT same as training
     audio, sr = librosa.load(file_path, sr=8000)
 
-    mfcc = librosa.feature.mfcc(
-        y=audio,
-        sr=sr,
-        n_mfcc=13
-    )
+    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=13)
 
-    # Padding / trimming
     if mfcc.shape[1] < max_pad_len:
-        mfcc = np.pad(
-            mfcc,
-            ((0, 0), (0, max_pad_len - mfcc.shape[1])),
-            mode='constant'
-        )
+        mfcc = np.pad(mfcc, ((0,0),(0,max_pad_len-mfcc.shape[1])), mode='constant')
     else:
         mfcc = mfcc[:, :max_pad_len]
 
@@ -102,6 +92,8 @@ def predict():
         if input_path.endswith(".webm"):
             ffmpeg.input(input_path).output(
                 output_path,
+                format='wav',
+                acodec='pcm_s16le',
                 ar=8000,
                 ac=1,
                 loglevel="quiet"
