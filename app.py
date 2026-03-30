@@ -113,8 +113,8 @@ def preprocess(file_path, max_pad_len=40):
 # ======================
 @app.route("/")
 def home():
-    #return render_template("index.html")
-    return "<h1>App is working</h1>"
+    return render_template("index.html")
+    #return "<h1>App is working</h1>"
 @app.route("/predict", methods=["POST"])
 def predict():
     if "file" not in request.files:
