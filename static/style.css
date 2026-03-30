@@ -8,10 +8,10 @@ body {
 /* Container */
 .container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;   /* 🔥 important */
   align-items: center;
+  justify-content: center;
   min-height: 100vh;
-  padding: 10px;
 }
 
 /* Card */
@@ -29,6 +29,7 @@ body {
 h1 {
   text-align: center;
   font-size: 1.8rem;
+  
 }
 
 h2 {
