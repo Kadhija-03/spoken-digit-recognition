@@ -7,6 +7,7 @@
 <body>
 
 <div class="container">
+
     <h1>🎤 Spoken Digit Recognition</h1>
 
     <div class="card">
@@ -18,7 +19,7 @@
 
         <hr>
 
-        <!-- Recording -->
+        <!-- Live Recording -->
         <h2>Record Live</h2>
 
         <div id="micIndicator">🎤</div>
@@ -30,12 +31,20 @@
 
         <audio id="audioPlayback" controls style="display:none;"></audio>
 
+        <!-- 🔥 Loader -->
+        <div id="loader" class="loader" style="display:none;"></div>
+
         <h2 id="result">Result: --</h2>
 
     </div>
+
 </div>
 
 <script>
+
+// 🔥 Warmup (runs in background)
+fetch("/warmup");
+
 // =======================
 // Upload
 // =======================
@@ -50,18 +59,23 @@ function upload() {
     let formData = new FormData();
     formData.append("file", fileInput.files[0]);
 
+    document.getElementById("loader").style.display = "block";
+    document.getElementById("result").innerText = "⏳ Processing...";
+
     fetch("/predict", {
         method: "POST",
         body: formData
     })
     .then(res => res.json())
     .then(data => {
+        document.getElementById("loader").style.display = "none";
+
         if (data.predicted_digit !== undefined) {
             document.getElementById("result").innerText =
-                "Predicted Digit: " + data.predicted_digit;
+                "✅ Predicted Digit: " + data.predicted_digit;
         } else {
             document.getElementById("result").innerText =
-                "Error: " + data.error;
+                "❌ Error: " + data.error;
         }
     });
 }
@@ -91,10 +105,8 @@ function stopRecording() {
     document.getElementById("micIndicator").style.color = "white";
 
     recorder.onstop = () => {
-        // 🔥 FIX: correct format (webm)
         let blob = new Blob(audioChunks, { type: 'audio/webm' });
 
-        // Playback
         let audioURL = URL.createObjectURL(blob);
         let player = document.getElementById("audioPlayback");
         player.src = audioURL;
@@ -103,18 +115,24 @@ function stopRecording() {
         let formData = new FormData();
         formData.append("file", blob, "recording.webm");
 
+        document.getElementById("loader").style.display = "block";
+        document.getElementById("result").innerText = "⏳ Processing...";
+
         fetch("/predict", {
             method: "POST",
             body: formData
         })
         .then(res => res.json())
         .then(data => {
+
+            document.getElementById("loader").style.display = "none";
+
             if (data.predicted_digit !== undefined) {
                 document.getElementById("result").innerText =
-                    "Predicted Digit: " + data.predicted_digit;
+                    "✅ Predicted Digit: " + data.predicted_digit;
             } else {
                 document.getElementById("result").innerText =
-                    "Error: " + data.error;
+                    "❌ Error: " + data.error;
             }
 
             document.getElementById("status").innerText = "";
@@ -123,6 +141,7 @@ function stopRecording() {
         audioChunks = [];
     };
 }
+
 </script>
 
 </body>
