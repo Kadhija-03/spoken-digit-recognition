@@ -44,29 +44,28 @@ def get_model():
 # Preprocessing
 # ======================
 def preprocess(file_path, max_pad_len=40):
-    audio, sr = librosa.load(file_path, sr=None)
-
-    audio = librosa.resample(audio, orig_sr=sr, target_sr=8000)
-
-    audio = librosa.util.normalize(audio)
-
-    if len(audio) > 8000:
-        audio = audio[:8000]
-    else:
-        audio = np.pad(audio, (0, 8000 - len(audio)))
+    # ✅ EXACT same as training
+    audio, sr = librosa.load(file_path, sr=8000)
 
     mfcc = librosa.feature.mfcc(
         y=audio,
-        sr=8000,
-        n_mfcc=13,
-        n_fft=256   # faster
+        sr=sr,
+        n_mfcc=13
     )
 
-    mfcc = librosa.util.fix_length(mfcc, size=max_pad_len, axis=1)
+    # Padding / trimming
+    if mfcc.shape[1] < max_pad_len:
+        mfcc = np.pad(
+            mfcc,
+            ((0, 0), (0, max_pad_len - mfcc.shape[1])),
+            mode='constant'
+        )
+    else:
+        mfcc = mfcc[:, :max_pad_len]
+
     mfcc = mfcc[np.newaxis, ..., np.newaxis]
 
     return mfcc
-
 # ======================
 # Routes
 # ======================
