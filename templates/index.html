@@ -13,26 +13,12 @@
 
     <div class="card">
 
-        <!-- Upload -->
+        <!-- Upload Only -->
         <h2>Upload Audio</h2>
-        <input type="file" id="audioFile">
+        <input type="file" id="audioFile" accept=".wav">
         <button onclick="upload()">Predict</button>
 
-        <hr>
-
-        <!-- Live Recording -->
-        <h2>Record Live</h2>
-
-        <div id="micIndicator">🎤</div>
-
-        <button onclick="startRecording()">🎙 Start</button>
-        <button onclick="stopRecording()">⏹ Stop</button>
-
-        <p id="status"></p>
-
-        <audio id="audioPlayback" controls style="display:none;"></audio>
-
-        <!-- 🔥 Loader -->
+        <!-- Loader -->
         <div id="loader" class="loader" style="display:none;"></div>
 
         <h2 id="result">Result: --</h2>
@@ -43,17 +29,17 @@
 
 <script>
 
-// 🔥 Warmup (runs in background)
+// 🔥 Warmup (loads model early)
 fetch("/warmup");
 
 // =======================
-// Upload
+// Upload Function
 // =======================
 function upload() {
     let fileInput = document.getElementById("audioFile");
 
     if (fileInput.files.length === 0) {
-        alert("Please select a file");
+        alert("Please select a WAV file");
         return;
     }
 
@@ -79,68 +65,6 @@ function upload() {
                 "❌ Error: " + data.error;
         }
     });
-}
-
-// =======================
-// Recording
-// =======================
-let recorder, audioChunks = [];
-
-async function startRecording() {
-    document.getElementById("status").innerText = "Recording...";
-    document.getElementById("micIndicator").style.color = "red";
-
-    let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    
-    recorder = new MediaRecorder(stream);
-
-    recorder.ondataavailable = e => audioChunks.push(e.data);
-
-    recorder.start();
-}
-
-function stopRecording() {
-    recorder.stop();
-
-    document.getElementById("status").innerText = "Processing...";
-    document.getElementById("micIndicator").style.color = "white";
-
-    recorder.onstop = () => {
-        
-        let blob = new Blob(audioChunks);
-        let audioURL = URL.createObjectURL(blob);
-        let player = document.getElementById("audioPlayback");
-        player.src = audioURL;
-        player.style.display = "block";
-
-        let formData = new FormData();
-        formData.append("file", blob, "recording.webm");
-
-        document.getElementById("loader").style.display = "block";
-        document.getElementById("result").innerText = "⏳ Processing...";
-
-        fetch("/predict", {
-            method: "POST",
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-
-            document.getElementById("loader").style.display = "none";
-
-            if (data.predicted_digit !== undefined) {
-                document.getElementById("result").innerText =
-                    "✅ Predicted Digit: " + data.predicted_digit;
-            } else {
-                document.getElementById("result").innerText =
-                    "❌ Error: " + data.error;
-            }
-
-            document.getElementById("status").innerText = "";
-        });
-
-        audioChunks = [];
-    };
 }
 
 </script>
