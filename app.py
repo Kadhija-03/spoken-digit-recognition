@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, render_template
 import numpy as np
 import librosa
 import os
-import ffmpeg
 from tensorflow.keras import layers, models
 
 app = Flask(__name__)
@@ -56,6 +55,7 @@ def preprocess(file_path, max_pad_len=40):
     mfcc = mfcc[np.newaxis, ..., np.newaxis]
 
     return mfcc
+
 # ======================
 # Routes
 # ======================
@@ -63,7 +63,7 @@ def preprocess(file_path, max_pad_len=40):
 def home():
     return render_template("index.html")
 
-# 🔥 Warmup (reduce delay feeling)
+# 🔥 Warmup
 @app.route("/warmup")
 def warmup():
     get_model()
@@ -75,33 +75,13 @@ def predict():
         return jsonify({"error": "No file uploaded"})
 
     file = request.files["file"]
-    filename = file.filename
 
-    # Save input
-    if filename.endswith(".webm"):
-        input_path = "input.webm"
-    else:
-        input_path = "input.wav"
-
+    # Save input as WAV only
+    input_path = "input.wav"
     file.save(input_path)
 
-    output_path = "converted.wav"
-
     try:
-        # Convert if needed
-        if input_path.endswith(".webm"):
-            ffmpeg.input(input_path).output(
-                output_path,
-                format='wav',
-                acodec='pcm_s16le',
-                ar=8000,
-                ac=1,
-                loglevel="quiet"
-            ).run(overwrite_output=True)
-        else:
-            output_path = input_path
-
-        features = preprocess(output_path)
+        features = preprocess(input_path)
 
         model = get_model()
         prediction = model.predict(features)
@@ -113,9 +93,8 @@ def predict():
         return jsonify({"error": str(e)})
 
     finally:
-        for f in [input_path, output_path]:
-            if os.path.exists(f):
-                os.remove(f)
+        if os.path.exists(input_path):
+            os.remove(input_path)
 
 # ======================
 # Run
